@@ -12,6 +12,33 @@ fi
 
 HOST=$1
 
+##### get domain users ######
+function get_domain_users(){
+        DM_RIDS=`rpcclient -U '' -N $HOST -c "querygroupmem 0x201" | sed 's/rid:\[//g' | tr -d ']' | sed 's/attr:\[0x7//g'`
+        DM_RID_ARRAY=($DM_RIDS)
+
+        echo "The array contains ${#DM_RID_ARRAY[@]} items"
+        echo "+++++++++ DOMAIN Users +++++++++"
+
+        #let's use a maxsize of 500 items per query bc too much will result in rpcclient error
+        maxarraycount=${#DM_RID_ARRAY[@]}
+        arraystart=0
+        arrayend=500
+        arraycount=500
+        while [ $arrayend -lt $maxarraycount ]; do
+                echo "Testing from $arraystart to $arrayend"
+                temparray=(${DM_RID_ARRAY[@]:$arraystart:$arraycount})
+
+                #flatten the array into a string
+                tempstring=`echo "${temparray[@]}"`
+                rpcclient -U '' -N $HOST -c "samlookuprids domain $tempstring" | cut -d ' ' -f3 | tee -a rpcfiend_domain_users.txt
+                arraystart=$(( $arraystart + $arraycount ))
+                arrayend=$(( $arrayend + $arraycount ))
+                #echo "Arraystart is now $arraystart and Arrayend is now $arrayend"
+        done
+
+}
+
 ##### get domain admins ######
 function get_domain_admins(){
 
@@ -64,6 +91,7 @@ function get_domain_machines(){
 
 }
 
+get_domain_users
 get_domain_admins
 get_domain_controllers
 get_domain_machines
