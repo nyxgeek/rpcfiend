@@ -22,6 +22,7 @@ backupserver
 ```
 
 ## added in authenticated version
+usage: ./rpcfiend.sh 192.168.1.1 username
 ```
 [~] # ./rpcfiend_authenticated.sh acme-dc01.acmecomputercompany.com username
 Please enter your password:
